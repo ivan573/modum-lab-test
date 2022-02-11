@@ -1,11 +1,26 @@
 <template>
-    <div class="book-popup" @click="_handlePopupClick">
-        <h3 class="book-popup__name">{{ book.name }}</h3>
-        <p class="book-popup__author">{{ book.author }}</p>
-        <p class="book-popup__year">{{ book.year }}</p>
-        <img class="book-popup__cover" :src="book.image" :alt="book.name">
-        <p class="book-popup__description">{{ book.description }}</p>
-    </div>
+  <div
+    class="book-popup"
+    @click="_handlePopupClick"
+  >
+    <h3 class="book-popup__name">
+      {{ book.name }}
+    </h3>
+    <p class="book-popup__author">
+      {{ book.author }}
+    </p>
+    <p class="book-popup__year">
+      {{ book.year }}
+    </p>
+    <img
+      class="book-popup__cover"
+      :src="book.image"
+      :alt="book.name"
+    >
+    <p class="book-popup__description">
+      {{ book.description }}
+    </p>
+  </div>
 </template>
 
 <script>

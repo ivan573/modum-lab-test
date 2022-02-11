@@ -1,5 +1,8 @@
 <template>
-  <div class="page-overlay" @click="_handleOverlayClick"></div>
+  <div
+    class="page-overlay"
+    @click="_handleOverlayClick"
+  />
 </template>
 
 <script>
