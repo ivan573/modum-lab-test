@@ -1,15 +1,15 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import Vue from 'vue';
+import Vuex from 'vuex';
+import categories from './modules/categories.js';
+import books from './modules/books.js';
+import timeout from './modules/timeout.js';
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 export default new Vuex.Store({
-  state: {
-  },
-  mutations: {
-  },
-  actions: {
-  },
   modules: {
+    categories,
+    books,
+    timeout
   }
-})
+});
