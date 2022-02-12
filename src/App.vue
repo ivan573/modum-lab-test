@@ -3,13 +3,10 @@
     <h1 class="title">
       Очень красивое приложение про книжки
     </h1>
-    <div class="categories">
-      <CategoryTag
-        v-for="category in categories"
-        :key="category.id"
-        :category="category"
-      />
-    </div>
+    <CategoryTags
+      :categories="categories"
+      :active-categories="activeCategories"
+    />
     <button
       class="discard-button"
       @click="_handleDiscardClick"
@@ -41,7 +38,7 @@
 </template>
 
 <script>
-import CategoryTag from './components/CategoryTag.vue';
+import CategoryTags from './components/CategoryTags.vue';
 import BookCard from './components/BookCard.vue';
 import BookPopup from './components/BookPopup.vue';
 import PageOverlay from './components/PageOverlay.vue';
@@ -49,7 +46,7 @@ import PageOverlay from './components/PageOverlay.vue';
 export default {
   name: 'App',
   components: {
-    CategoryTag,
+    CategoryTags,
     BookCard,
     BookPopup,
     PageOverlay
@@ -57,6 +54,9 @@ export default {
   computed: {
     categories() {
       return this.$store.getters.allCategories; 
+    },
+    activeCategories() {
+      return this.$store.getters.activeCategories;
     },
     books() {
       return this.$store.getters.books;
@@ -66,27 +66,34 @@ export default {
     },
     activeBook() {
       return this.$store.getters.activeBook;
+    },
+    routeCategories() {
+      const  routeQuery = this.$route.query;
+      return Object.keys(routeQuery).length && routeQuery.categories ?
+        routeQuery.categories.split(',').map(category => +category) :
+        [];
     }
   },
   watch: {
-    categories: {
-      deep: true,
+    $route: {
       async handler() {
-        this.$store.commit('discardPage');
-        if (!this.$store.getters.activeCategories.length) {
-          this.$store.commit('discardBooksData');
-          return;
-        }
-        await this.$store.dispatch('fetchBooks');
-      }   
-    }
-  },
+      this.$store.commit('updateActiveCategories', this.routeCategories);
+
+      this.$store.commit('discardPage');
+      if (!this.activeCategories.length) {
+        this.$store.commit('discardBooksData');
+        return;
+      }
+      await this.$store.dispatch('fetchBooks');
+    },
+    immediate: true
+  }},
   async mounted() {
     await this.$store.dispatch('fetchCategories');
   },
   methods: {
     _handleDiscardClick() {
-      this.$store.commit('discardActiveness');
+      if (this.activeCategories.length) this.$router.push({name: 'Home'});
     },
     async _handleLoadMoreClick() {
       await this.$store.dispatch('fetchBooks');
@@ -118,14 +125,6 @@ export default {
   margin: 0 auto 16px;
   width: fit-content;
   color: var(--main-text-color);
-}
-
-.categories {
-  margin: 0 auto 15px;
-  width: fit-content;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
 }
 
 .discard-button,

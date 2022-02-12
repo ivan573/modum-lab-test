@@ -45,7 +45,7 @@ export default {
             fetchBooks(ctx) {
                 ctx.commit('clearLocalTimeout');
                 ctx.commit('setLocalTimeout', async () => {
-                    const categories = ctx.getters.activeCategories.map(el => el.id);
+                    const categories = ctx.getters.activeCategories;
                     const currentPage = ctx.getters.page;
                     if (categories.length) {
                         const booksData = await api('list', categories, currentPage + 1);
