@@ -12,6 +12,7 @@ export default {
         getters: {
             page: state => state.page,
             next: state => state.next,
+            count: state => state.next,
             books: state => state.books,
             activeBook: state => state.activeBook
         },
@@ -34,7 +35,7 @@ export default {
             discardPage(state) {
                 state.page = 0;
             },
-            setActiveBook(state, book) {
+            updateActiveBook(state, book) {
                 state.activeBook = book;
             },
             discardActiveBook(state) {
@@ -42,7 +43,7 @@ export default {
             }
         },
         actions: {
-            fetchBooks(ctx) {
+            fetchBooks(ctx, callback) {
                 ctx.commit('clearLocalTimeout');
                 ctx.commit('setLocalTimeout', async () => {
                     const categories = ctx.getters.activeCategories;
@@ -51,11 +52,12 @@ export default {
                         const booksData = await api('list', categories, currentPage + 1);
                         if (currentPage) {
                             ctx.commit('addNextPageData', booksData.data);
+                            if (callback) callback();
                             return;
                         }
                         ctx.commit('updateBooksData', booksData.data);
                     }
-                });
+                });   
             }
         }
 };

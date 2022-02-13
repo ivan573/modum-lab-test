@@ -1,14 +1,14 @@
 <template>
   <div
     class="page-overlay"
-    @click="_handleOverlayClick"
+    @click="handleOverlayClick"
   />
 </template>
 
 <script>
 export default {
   methods: {
-    _handleOverlayClick() {
+    handleOverlayClick() {
       this.$store.commit('discardActiveBook');
     }
   }

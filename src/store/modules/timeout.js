@@ -10,18 +10,18 @@ export default {
             if (state.firstFetchCall) {
                 callback();
                 state.firstFetchCall = false;
-                state.timeout = (setTimeout(() => {
+                state.timeout = setTimeout(() => {
                     state.firstFetchCall = true;
                     this.commit('clearLocalTimeout');
-                }, DELAY));
+                }, DELAY);
                 return;
             }
 
-            state.timeout = (setTimeout(() => {
+            state.timeout = setTimeout(() => {
                 callback();
                 state.firstFetchCall = true;
                 this.commit('clearLocalTimeout');
-            }, DELAY));
+            }, DELAY);
         },
         clearLocalTimeout(state) {
             clearTimeout(state.timeout);

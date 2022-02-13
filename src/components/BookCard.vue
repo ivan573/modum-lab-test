@@ -1,20 +1,24 @@
 <template>
   <div
     class="book-card"
-    @click="_handleCardClick"
+    @click="handleCardClick"
   >
-    <h3 class="book-card__name">
-      {{ book.name }}
-    </h3>
-    <p class="book-card__description">
-      {{ book.description }}
-    </p>
-    <p class="book-card__author">
-      Автор: {{ book.author }}
-    </p>
-    <p class="book-card__year">
-      Год выпуска: {{ book.year }}
-    </p>
+    <h3
+      class="book-card__name"
+      v-html="book.name"
+    />
+    <p
+      class="book-card__description"
+      v-html="book.description"
+    />
+    <p
+      class="book-card__author"
+      v-html="'Автор: ' + book.author"
+    />
+    <p
+      class="book-card__year"
+      v-html="'Год выпуска: ' + book.year"
+    />
   </div>
 </template>
 
@@ -27,8 +31,8 @@ export default {
         }
     },
     methods: {
-        _handleCardClick() {
-            this.$store.commit('setActiveBook', this.book);
+        handleCardClick() {
+            this.$store.commit('updateActiveBook', this.book);
         }
     }
 };
@@ -36,7 +40,7 @@ export default {
 
 <style>
 .book-card {
-    padding: 4px;
+    padding: 16px;
     border-radius: 8px;
     background-color: var(--card-bg-color);
     cursor: pointer;
@@ -44,7 +48,8 @@ export default {
 }
 
 .book-card:hover {
-    transform: translate(4px, -4px);
+    transform: scale(1.01);
+    box-shadow: 4px 4px 8px 0px var(--shadow-color);
 }
 
 .book-card__name {

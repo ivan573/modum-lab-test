@@ -1,25 +1,29 @@
 <template>
   <div
     class="book-popup"
-    @click="_handlePopupClick"
+    @click="handlePopupClick"
   >
-    <h3 class="book-popup__name">
-      {{ book.name }}
-    </h3>
-    <p class="book-popup__author">
-      {{ book.author }}
-    </p>
-    <p class="book-popup__year">
-      {{ book.year }}
-    </p>
+    <h3
+      class="book-popup__name"
+      v-html="book.name"
+    />
+    <p
+      class="book-popup__author"
+      v-html="book.author"
+    />
+    <p
+      class="book-popup__year"
+      v-html="book.year"
+    />
     <img
       class="book-popup__cover"
       :src="book.image"
       :alt="book.name"
     >
-    <p class="book-popup__description">
-      {{ book.description }}
-    </p>
+    <p
+      class="book-popup__description"
+      v-html="book.description"
+    />
   </div>
 </template>
 
@@ -32,7 +36,7 @@ export default {
         }
     },
     methods: {
-        _handlePopupClick() {
+        handlePopupClick() {
             this.$store.commit('discardActiveBook');
         }
     }

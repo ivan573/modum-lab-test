@@ -1,8 +1,5 @@
 <template>
-  <form
-    ref="categories"
-    class="category-tags"
-  >
+  <form class="category-tags">
     <template
       v-for="category in categories"
     >
@@ -12,8 +9,8 @@
         class="category-tags__checkbox"
         type="checkbox"
         :name="category.id"
-        :checked="_checkActiveness(category.id)"
-        @change="_handleCategoryCheck()"
+        :checked="checkActiveness(category.id)"
+        @change="handleCategoryCheck"
       >
       <label
         :key="'label' + category.id"
@@ -37,8 +34,8 @@ export default {
         }
     },
     methods: {
-        _handleCategoryCheck() {
-            const formData = new FormData(this.$refs.categories);
+        handleCategoryCheck() {
+            const formData = new FormData(this.$el);
             const checkedCategories = [];
             for (var key of formData.keys()) {
                 checkedCategories.push(+key);
@@ -54,7 +51,7 @@ export default {
             }
             this.$router.push({name: 'Home'});
         },
-        _checkActiveness(id) {
+        checkActiveness(id) {
             return this.activeCategories.find(el => el === id);
         }
     }

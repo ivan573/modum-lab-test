@@ -7,23 +7,24 @@
       :categories="categories"
       :active-categories="activeCategories"
     />
+    <SearchBar :value="searchValue" />
     <button
       class="discard-button"
-      @click="_handleDiscardClick"
+      @click="handleDiscardClick"
     >
       Сбросить
     </button>
     <div class="books">
       <BookCard
-        v-for="book in books"
+        v-for="book in searchValue ? foundShownBooks : books"
         :key="book.id"
         :book="book"
       />
     </div>
     <button
-      v-show="areThereMoreBooks"
+      v-show="searchValue ? areThereMoreFoundBooks : areThereMoreBooks"
       class="load-more-button"
-      @click="_handleLoadMoreClick"
+      @click="handleLoadMoreClick"
     >
       Загрузить еще
     </button>
@@ -39,6 +40,7 @@
 
 <script>
 import CategoryTags from './components/CategoryTags.vue';
+import SearchBar from './components/SearchBar.vue';
 import BookCard from './components/BookCard.vue';
 import BookPopup from './components/BookPopup.vue';
 import PageOverlay from './components/PageOverlay.vue';
@@ -47,6 +49,7 @@ export default {
   name: 'App',
   components: {
     CategoryTags,
+    SearchBar,
     BookCard,
     BookPopup,
     PageOverlay
@@ -64,8 +67,17 @@ export default {
     areThereMoreBooks() {
       return this.$store.getters.next;
     },
+    areThereMoreFoundBooks() {
+      return this.$store.getters.nextFound;
+    },
     activeBook() {
       return this.$store.getters.activeBook;
+    },
+    searchValue() {
+      return this.$store.getters.searchValue;
+    },
+    foundShownBooks() {
+      return this.$store.getters.foundShownBooks;
     },
     routeCategories() {
       const  routeQuery = this.$route.query;
@@ -77,26 +89,38 @@ export default {
   watch: {
     $route: {
       async handler() {
-      this.$store.commit('updateActiveCategories', this.routeCategories);
+        this.$store.commit('discardSearch');
+        this.$store.commit('updateActiveCategories', this.routeCategories);
 
-      this.$store.commit('discardPage');
-      if (!this.activeCategories.length) {
-        this.$store.commit('discardBooksData');
-        return;
-      }
-      await this.$store.dispatch('fetchBooks');
+        this.$store.commit('discardPage');
+        if (!this.activeCategories.length) {
+          this.$store.commit('discardBooksData');
+          return;
+        }
+
+        await this.$store.dispatch('fetchBooks');
+      },
+      immediate: true
     },
-    immediate: true
-  }},
+    searchValue() {
+      this.$store.commit('discardFoundBooks');
+      this.$store.commit('updateFoundBooks', this.books);
+    }
+  },
   async mounted() {
     await this.$store.dispatch('fetchCategories');
   },
   methods: {
-    _handleDiscardClick() {
+    handleDiscardClick() {
       if (this.activeCategories.length) this.$router.push({name: 'Home'});
+      this.$store.commit('discardSearch');
     },
-    async _handleLoadMoreClick() {
-      await this.$store.dispatch('fetchBooks');
+    async handleLoadMoreClick() {
+      if (!this.searchValue) {
+        await this.$store.dispatch('fetchBooks');
+        return;
+      }
+      this.$store.dispatch('showMoreFoundBooks');
     }
   }
 };
@@ -112,6 +136,11 @@ export default {
   --btn-hover-bg-color: paleturquoise;
   --border-color: lightslategray;
   --shadow-color: grey;
+  --highlight-color: lightseagreen;
+}
+
+strong {
+  color: var(--highlight-color);
 }
 
 #app {
