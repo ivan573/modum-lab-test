@@ -53,6 +53,7 @@ import CategoryTags from './components/CategoryTags.vue';
 import SearchBar from './components/SearchBar.vue';
 import BookCard from './components/BookCard.vue';
 import BookPopup from './components/BookPopup.vue';
+import {getArraysEquality, getStringsEquality} from './utils.js';
 
 export default {
   name: 'App',
@@ -101,17 +102,32 @@ export default {
   watch: {
     $route: {
       handler() {
-        this.$store.commit('updateActiveCategories', this.routeCategories);
-        this.$store.commit('updateSearchValue', this.routeSearch);
+        const areCategoriesUpdated = !getArraysEquality(this.activeCategories, this.routeCategories);
+        const isSearchUpdated = !getStringsEquality(this.searchValue, this.routeSearch);
 
-        this.$store.commit('discardBooksData');
-        this.$store.commit('discardFoundBooks');
+        if (areCategoriesUpdated) {
+          this.$store.commit('updateActiveCategories', this.routeCategories);
+          this.$store.commit('discardBooksData');
+        }
 
-        if (!this.activeCategories.length) return;
+        if (isSearchUpdated) {
+          this.$store.commit('updateSearchValue', this.routeSearch);
+          this.$store.commit('discardFoundBooks');
+        }
+
+        if (areCategoriesUpdated && !isSearchUpdated) {
+          this.$store.dispatch('fetchBooks');
+          return;
+        }
+
+        if (!areCategoriesUpdated && isSearchUpdated) {
+          this.$store.commit('updateFoundBooks', this.books);
+          return;
+        }
 
         this.$store.dispatch('fetchBooks', () => {
-          this.$store.commit('updateFoundBooks', this.books);
-        });
+            this.$store.commit('updateFoundBooks', this.books);
+        }); 
       },
       immediate: true
     }
@@ -134,19 +150,19 @@ export default {
     handleSearchSubmit(searchQuery) {
       const search = searchQuery;
       const currentSearch = this.$route.query.search;
-        if (search === currentSearch) return;
+      if (search === currentSearch) return;
 
-        const categories = this.$store.getters.activeCategories.join(',');
+      const categories = this.$store.getters.activeCategories.join(',');
 
-        if (search && categories) {
-          this.$router.push({
-            name: 'Home',
-            query: {
-              search,
-              categories
-            }
-          });
-        }
+      if (search && categories) {
+        this.$router.push({
+          name: 'Home',
+          query: {
+            search,
+            categories
+          }
+        });
+      }
     },
     handleDiscardClick() {
       if (this.activeCategories.length) this.$router.push({name: 'Home'});

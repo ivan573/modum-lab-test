@@ -25,9 +25,8 @@ const getHighlightedBooks = (searchValue, allBooks) => {
 const initialState = {
     searchValue: '',
     foundBooks: [],
-    foundShownBooks: [],
     foundBooksPage: 0,
-    nextFound: false
+    isLoading: false
 };
 
 export default {
@@ -35,9 +34,11 @@ export default {
     getters: {
         searchValue: state => state.searchValue,
         foundBooks: state => state.foundBooks,
-        foundShownBooks: state => state.foundShownBooks,
+        foundShownBooks: state => state.foundBooks.slice(0, state.foundBooksPage * SHOW_AT_ONCE),
         foundBooksPage: state => state.foundBooksPage,
-        nextFound: state => state.nextFound
+        nextFound: (state, getters, rootState, rootGetters) => rootGetters.next ||
+            (!rootGetters.next && getters.foundShownBooks.length < getters.foundBooks.length),
+        isLoading: state => state.isLoading
     },
     mutations: {
         updateSearchValue(state, value) {
@@ -51,66 +52,48 @@ export default {
 
             if (!searchValue) {
                 state.foundBooks = [];
-                state.foundShownBooks = [];
                 return;
             }
+
+            this.commit('updateLoadingState', false);
+
+            state.foundBooksPage = Math.floor(state.foundBooks.length / SHOW_AT_ONCE);
+            state.foundBooks = state.foundBooks.concat(getHighlightedBooks(searchValue, books));
 
             const numberOfBooksToShow = (state.foundBooksPage + 1) * SHOW_AT_ONCE;
-
-            state.foundBooks = state.foundBooks.concat(getHighlightedBooks(searchValue, books));
-            state.foundShownBooks = state.foundBooks.slice(0, numberOfBooksToShow);
-
-            const areThereMoreBooks = state.foundBooks.length > state.foundShownBooks.length || this.getters.next;
-            this.commit('updateNextFound', areThereMoreBooks);
-
-            if (state.foundShownBooks.length < numberOfBooksToShow) {
-                this.dispatch('showMoreFoundBooks');
-                return;
-            }
-
-            this.commit('incrementFoundBooksPage');
-        },
-        updateFoundShownBooks(state, books) {
-            state.foundShownBooks = books;
+            if (this.getters.foundShownBooks.length < numberOfBooksToShow) this.dispatch('showMoreFoundBooks');
         },
         incrementFoundBooksPage(state) {
             state.foundBooksPage++;
         },
-        updateNextFound(state, next) {
-            state.nextFound = next;
-        },
         discardFoundBooks(state) {
             state.foundBooks = [];
-            state.foundShownBooks = [];
             state.foundBooksPage = 0;
-            state.nextFound = false;
+        },
+        updateLoadingState(state, loadingState) {
+            state.isLoading = loadingState;
         }
     },
     actions: {
         showMoreFoundBooks(ctx) {
-            const shownBooks = ctx.getters.foundShownBooks;
+            if (ctx.getters.isLoading) return;
+
+            const numberOfBooksToShow = ctx.getters.foundBooksPage * SHOW_AT_ONCE;
             const foundBooks = ctx.getters.foundBooks;
-            const remainingBooks = foundBooks.slice(shownBooks.length, shownBooks.length + SHOW_AT_ONCE);
-            const moreBooksToLoad = this.getters.next;
+            const numberOfUnshownBooks = foundBooks.slice(numberOfBooksToShow, numberOfBooksToShow + SHOW_AT_ONCE).length;
+            const areThereMoreBooksToLoad = ctx.getters.next;
 
-            if (remainingBooks.length >= SHOW_AT_ONCE) {
-                ctx.commit('updateFoundShownBooks', shownBooks.concat(remainingBooks.slice(0, SHOW_AT_ONCE)));
-                ctx.commit('updateNextFound', moreBooksToLoad);
-                ctx.commit('incrementFoundBooksPage');
-                return;
-            }
-
-            if (remainingBooks.length < SHOW_AT_ONCE && moreBooksToLoad) {
-                const oldBooksLength = ctx.getters.books.length;
+            if (numberOfUnshownBooks < SHOW_AT_ONCE && areThereMoreBooksToLoad) {
+                const numberOfDownloadedBooks = ctx.getters.books.length;
+                ctx.commit('updateLoadingState', true);
                 ctx.dispatch('fetchBooks', () => {
-                    const newBooks = ctx.getters.books.slice(oldBooksLength);
-                    ctx.commit('updateFoundBooks', newBooks);
+                    const newDownloadedBooks = ctx.getters.books.slice(numberOfDownloadedBooks);
+                    ctx.commit('updateFoundBooks', newDownloadedBooks);
                 });
                 return;
             }
 
-            ctx.commit('updateFoundShownBooks', foundBooks);
-            ctx.commit('updateNextFound', false);
+            ctx.commit('incrementFoundBooksPage');
         }
     }
 };
