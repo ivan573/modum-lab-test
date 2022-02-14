@@ -40,16 +40,7 @@ export default {
             for (var key of formData.keys()) {
                 checkedCategories.push(+key);
             }
-
-            if (checkedCategories.length) {
-                const categories = checkedCategories.join(',');
-                this.$router.push({
-                    name: 'Home',
-                    query: {categories}
-                });
-                return;
-            }
-            this.$router.push({name: 'Home'});
+            this.$emit('categoryCheck', checkedCategories);
         },
         checkActiveness(id) {
             return this.activeCategories.find(el => el === id);
@@ -60,7 +51,7 @@ export default {
 
 <style>
 .category-tags {
-    margin: 0 auto 16px;
+    margin: 0 auto 0;
     width: fit-content;
     display: flex;
     flex-wrap: wrap;

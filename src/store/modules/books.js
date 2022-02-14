@@ -32,9 +32,6 @@ export default {
             discardBooksData(state) {
                 Object.assign(state, initialState);
             },
-            discardPage(state) {
-                state.page = 0;
-            },
             updateActiveBook(state, book) {
                 state.activeBook = book;
             },
@@ -44,20 +41,19 @@ export default {
         },
         actions: {
             fetchBooks(ctx, callback) {
+                const categories = ctx.getters.activeCategories;
+                if (!categories.length) return;
                 ctx.commit('clearLocalTimeout');
                 ctx.commit('setLocalTimeout', async () => {
-                    const categories = ctx.getters.activeCategories;
                     const currentPage = ctx.getters.page;
-                    if (categories.length) {
-                        const booksData = await api('list', categories, currentPage + 1);
-                        if (currentPage) {
-                            ctx.commit('addNextPageData', booksData.data);
-                            if (callback) callback();
-                            return;
-                        }
-                        ctx.commit('updateBooksData', booksData.data);
+                    const booksData = await api('list', categories, currentPage + 1);
+                    if (currentPage) {
+                        ctx.commit('addNextPageData', booksData.data);
                         if (callback) callback();
+                        return;
                     }
+                    ctx.commit('updateBooksData', booksData.data);
+                    if (callback) callback();
                 });   
             }
         }

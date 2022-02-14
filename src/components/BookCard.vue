@@ -1,7 +1,6 @@
 <template>
   <div
     class="book-card"
-    @click="handleCardClick"
   >
     <h3
       class="book-card__name"
@@ -28,11 +27,6 @@ export default {
         book: {
             type: Object,
             default: () => {}
-        }
-    },
-    methods: {
-        handleCardClick() {
-            this.$store.commit('updateActiveBook', this.book);
         }
     }
 };

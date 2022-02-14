@@ -1,7 +1,6 @@
 <template>
   <div
     class="book-popup"
-    @click="handlePopupClick"
   >
     <h3
       class="book-popup__name"
@@ -34,11 +33,6 @@ export default {
             type: Object,
             default: () => {}
         }
-    },
-    methods: {
-        handlePopupClick() {
-            this.$store.commit('discardActiveBook');
-        }
     }
 };
 </script>
@@ -52,7 +46,7 @@ export default {
     left: 50%;
     transform: translate(-50%, -50%);
     max-height: 90vh;
-    width: 30vw;
+    width: 50vw;
     z-index: 3;
     background-color: var(--main-bg-color);
     box-shadow: 4px 4px 8px 0px var(--shadow-color);
@@ -60,7 +54,11 @@ export default {
 }
 
 .book-popup__cover {
-    max-height: 160px;
+    width: 40%;
+}
+
+.book-popup__description {
+  text-align: left;
 }
 
 .book-popup__name,

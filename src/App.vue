@@ -4,10 +4,16 @@
       Очень красивое приложение про книжки
     </h1>
     <CategoryTags
+      class="tags"
       :categories="categories"
       :active-categories="activeCategories"
+      @categoryCheck="handleCategoryCheck"
     />
-    <SearchBar :value="searchValue" />
+    <SearchBar
+      class="search"
+      :value="searchValue"
+      @searchSubmit="handleSearchSubmit"
+    />
     <button
       class="discard-button"
       @click="handleDiscardClick"
@@ -19,6 +25,7 @@
         v-for="book in searchValue ? foundShownBooks : books"
         :key="book.id"
         :book="book"
+        @click.native="handleBookCardClick(book)"
       />
     </div>
     <button
@@ -31,9 +38,12 @@
     <BookPopup 
       v-if="activeBook"
       :book="activeBook"
+      @click.native="handlePopupClick"
     />
-    <PageOverlay
-      v-show="activeBook"
+    <div
+      v-if="activeBook"
+      class="page-overlay"
+      @click="handlePopupClick"
     />
   </div>
 </template>
@@ -43,7 +53,6 @@ import CategoryTags from './components/CategoryTags.vue';
 import SearchBar from './components/SearchBar.vue';
 import BookCard from './components/BookCard.vue';
 import BookPopup from './components/BookPopup.vue';
-import PageOverlay from './components/PageOverlay.vue';
 
 export default {
   name: 'App',
@@ -51,8 +60,7 @@ export default {
     CategoryTags,
     SearchBar,
     BookCard,
-    BookPopup,
-    PageOverlay
+    BookPopup
   },
   computed: {
     categories() {
@@ -92,38 +100,70 @@ export default {
   },
   watch: {
     $route: {
-      async handler() {
+      handler() {
         this.$store.commit('updateActiveCategories', this.routeCategories);
         this.$store.commit('updateSearchValue', this.routeSearch);
 
-        this.$store.commit('discardPage');
-        if (!this.activeCategories.length) {
-          this.$store.commit('discardBooksData');
-          return;
-        }
+        this.$store.commit('discardBooksData');
+        this.$store.commit('discardFoundBooks');
 
-        await this.$store.dispatch('fetchBooks', () => {
-          this.$store.commit('discardFoundBooks');
+        if (!this.activeCategories.length) return;
+
+        this.$store.dispatch('fetchBooks', () => {
           this.$store.commit('updateFoundBooks', this.books);
         });
       },
       immediate: true
     }
   },
-  async mounted() {
-    await this.$store.dispatch('fetchCategories');
+  mounted() {
+    this.$store.dispatch('fetchCategories');
   },
   methods: {
+    handleCategoryCheck(checkedCategories) {
+      if (checkedCategories.length) {
+        const categories = checkedCategories.join(',');
+        this.$router.push({
+          name: 'Home',
+          query: {categories}
+        });
+        return;
+      }
+      this.$router.push({name: 'Home'});
+    },
+    handleSearchSubmit(searchQuery) {
+      const search = searchQuery;
+      const currentSearch = this.$route.query.search;
+        if (search === currentSearch) return;
+
+        const categories = this.$store.getters.activeCategories.join(',');
+
+        if (search && categories) {
+          this.$router.push({
+            name: 'Home',
+            query: {
+              search,
+              categories
+            }
+          });
+        }
+    },
     handleDiscardClick() {
       if (this.activeCategories.length) this.$router.push({name: 'Home'});
       this.$store.commit('discardSearch');
     },
-    async handleLoadMoreClick() {
+    handleBookCardClick(book) {
+      this.$store.commit('updateActiveBook', book);
+    },
+    handleLoadMoreClick() {
       if (!this.searchValue) {
-        await this.$store.dispatch('fetchBooks');
+        this.$store.dispatch('fetchBooks');
         return;
       }
       this.$store.dispatch('showMoreFoundBooks');
+    },
+    handlePopupClick() {
+      this.$store.commit('discardActiveBook');
     }
   }
 };
@@ -159,6 +199,14 @@ strong {
   color: var(--main-text-color);
 }
 
+.tags {
+  margin-bottom: 16px;
+}
+
+.search {
+  margin-bottom: 16px;
+}
+
 .discard-button,
 .load-more-button {
   margin: 0 auto;
@@ -186,5 +234,16 @@ strong {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
+}
+
+.page-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  opacity: 0.3;
+  z-index: 2;
 }
 </style>

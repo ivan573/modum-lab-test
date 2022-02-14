@@ -109,7 +109,7 @@ export default {
                 return;
             }
 
-            ctx.commit('updateFoundShownBooks', ctx.getters.foundBooks);
+            ctx.commit('updateFoundShownBooks', foundBooks);
             ctx.commit('updateNextFound', false);
         }
     }

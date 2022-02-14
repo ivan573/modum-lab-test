@@ -9,7 +9,7 @@
     >
     <button
       class="search-bar__button"
-      @click="handleSearchButtonClick"
+      @click.prevent="handleSearchButtonClick"
     >
       Найти
     </button>
@@ -26,22 +26,8 @@ export default {
     },
     methods: {
         handleSearchButtonClick() {
-          const currentSearch = this.$route.query.search;
           const search = this.$refs.search.value.trim();
-
-          if (search === currentSearch) return;
-
-          const categories = this.$store.getters.activeCategories.join(',');
-
-          if (search && categories) {
-            this.$router.push({
-              name: 'Home',
-              query: {
-                search,
-                categories
-              }
-            });
-          }
+          this.$emit('searchSubmit', search);
         }
     }
 };
@@ -49,7 +35,7 @@ export default {
 
 <style>
   .search-bar {
-    margin: 0 auto 16px;
+    margin: 0 auto 0;
     width: fit-content;
     display: flex;
     gap: 8px;
@@ -59,6 +45,10 @@ export default {
     padding: 8px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
+  }
+
+  .search-bar__value:focus {
+    outline: 2px solid var(--highlight-color);
   }
 
   .search-bar__button {
