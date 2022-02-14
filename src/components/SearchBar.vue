@@ -26,7 +26,22 @@ export default {
     },
     methods: {
         handleSearchButtonClick() {
-            this.$store.commit('updateSearchValue', this.$refs.search.value);
+          const currentSearch = this.$route.query.search;
+          const search = this.$refs.search.value.trim();
+
+          if (search === currentSearch) return;
+
+          const categories = this.$store.getters.activeCategories.join(',');
+
+          if (search && categories) {
+            this.$router.push({
+              name: 'Home',
+              query: {
+                search,
+                categories
+              }
+            });
+          }
         }
     }
 };

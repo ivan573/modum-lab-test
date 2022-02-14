@@ -80,17 +80,24 @@ export default {
       return this.$store.getters.foundShownBooks;
     },
     routeCategories() {
-      const  routeQuery = this.$route.query;
+      const routeQuery = this.$route.query;
       return Object.keys(routeQuery).length && routeQuery.categories ?
         routeQuery.categories.split(',').map(category => +category) :
         [];
+    },
+    routeSearch() {
+      const routeQuery = this.$route.query;
+      return Object.keys(routeQuery).length && routeQuery.search ? routeQuery.search : '';
     }
   },
   watch: {
     $route: {
       async handler() {
-        this.$store.commit('discardSearch');
         this.$store.commit('updateActiveCategories', this.routeCategories);
+        this.$store.commit('updateSearchValue', this.routeSearch);
+
+        this.$store.commit('discardFoundBooks');
+        this.$store.commit('updateFoundBooks', this.books);
 
         this.$store.commit('discardPage');
         if (!this.activeCategories.length) {
@@ -101,10 +108,6 @@ export default {
         await this.$store.dispatch('fetchBooks');
       },
       immediate: true
-    },
-    searchValue() {
-      this.$store.commit('discardFoundBooks');
-      this.$store.commit('updateFoundBooks', this.books);
     }
   },
   async mounted() {
