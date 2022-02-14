@@ -96,16 +96,16 @@ export default {
         this.$store.commit('updateActiveCategories', this.routeCategories);
         this.$store.commit('updateSearchValue', this.routeSearch);
 
-        this.$store.commit('discardFoundBooks');
-        this.$store.commit('updateFoundBooks', this.books);
-
         this.$store.commit('discardPage');
         if (!this.activeCategories.length) {
           this.$store.commit('discardBooksData');
           return;
         }
 
-        await this.$store.dispatch('fetchBooks');
+        await this.$store.dispatch('fetchBooks', () => {
+          this.$store.commit('discardFoundBooks');
+          this.$store.commit('updateFoundBooks', this.books);
+        });
       },
       immediate: true
     }

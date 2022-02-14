@@ -56,6 +56,7 @@ export default {
                             return;
                         }
                         ctx.commit('updateBooksData', booksData.data);
+                        if (callback) callback();
                     }
                 });   
             }
